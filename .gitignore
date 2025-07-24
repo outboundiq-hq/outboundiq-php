@@ -1,0 +1,79 @@
+# Composer
+/vendor/
+composer.lock
+
+# PHPUnit
+.phpunit.result.cache
+.phpunit.cache/
+coverage/
+clover.xml
+
+# PHP CS Fixer
+.php-cs-fixer.cache
+.php_cs.cache
+.php_cs
+
+# IDE & Editors
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
+.project
+.settings/
+.classpath
+*.swp
+*.swo
+.DS_Store
+
+# Environment files
+.env
+.env.local
+.env.*.local
+.env.test
+.env.production
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Cache
+*.cache
+.cache/
+
+# Build directories
+/build/
+/dist/
+/public/build/
+
+# Testing
+/coverage/
+.phpunit.result.cache
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# Application specific
+/storage/*.key
+*.pem
+*.key
+*.cert
+*.crt
+
+# Package specific
+config.local.php
+*.local.php 
