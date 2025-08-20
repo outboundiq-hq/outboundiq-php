@@ -1,5 +1,5 @@
 {
-    "name": "outboundiq/outboundiq-php",
+    "name": "outboundiq/php",
     "description": "API monitoring and reliability tracking for PHP applications",
     "type": "library",
     "license": "MIT",
