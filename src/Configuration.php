@@ -37,7 +37,8 @@ class Configuration
 
    // private const ENDPOINT = 'https://webhook.site/75c0dfc9-d25c-4ac9-9523-dcb02000cb87';
     // private const string ENDPOINT = 'http://agent.outboundiq.test/api/metric';
-    private const string ENDPOINT = 'https://agent.outboundiq.dev/api/metric';
+    //private const string ENDPOINT = 'https://agent.outboundiq.dev/api/metric';
+    private const string ENDPOINT = 'https://agent.staging.outboundiq.dev/api/metric';
 
     /**
      * Current configuration options
