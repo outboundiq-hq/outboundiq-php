@@ -88,7 +88,7 @@ class Configuration
 
         // Validate temp directory
         if (!is_dir($config['temp_dir']) || !is_writable($config['temp_dir'])) {
-            throw new ConfigurationException("Temporary directory {$config['temp_dir']} is not writable");
+           // throw new ConfigurationException("Temporary directory {$config['temp_dir']} is not writable");
         }
 
         // Initialize properties from merged config
