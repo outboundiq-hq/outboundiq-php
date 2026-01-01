@@ -204,4 +204,73 @@ class Client
     {
         $this->config->setEnabled(false);
     }
+
+    /**
+     * Get recommendation for a service
+     *
+     * Returns the best provider/endpoint to use based on:
+     * - Your actual API usage data (success rate, latency, stability)
+     * - Provider status page health
+     * - Recent incidents
+     *
+     * @param string $serviceName The service name (e.g., 'payment-processing')
+     * @param array $options Optional settings:
+     *                       - 'request_id': Your own trace ID for correlation (auto-generated if not provided)
+     * @return array|null The recommendation response from server, or null on network failure
+     */
+    public function recommend(string $serviceName, array $options = []): ?array
+    {
+        if (!$this->enabled) {
+            return null;
+        }
+
+        try {
+            $url = $this->config->getBaseUrl() . '/v1/recommend/' . urlencode($serviceName);
+            
+            // Generate or use provided request ID for tracing
+            $requestId = $options['request_id'] ?? $this->generateUuid();
+            
+            $response = $this->httpClient->get($url, [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $this->config->getApiKey(),
+                    'Accept' => 'application/json',
+                    'X-Request-Id' => $requestId,
+                ],
+                'timeout' => $this->config->getTimeout(),
+                'http_errors' => false, // Don't throw exceptions for 4xx/5xx
+            ]);
+
+            $body = $response->getBody()->getContents();
+            $decoded = json_decode($body, true);
+            
+            // Return the response regardless of status code - server always returns valid JSON
+            // Status codes: 200 (success), 401 (auth error), 404 (not found)
+            return $decoded;
+        } catch (GuzzleException $e) {
+            // Network failure - return null, don't break user's application
+            error_log('[OutboundIQ] Recommendation request failed: ' . $e->getMessage());
+            return null;
+        } catch (Exception $e) {
+            error_log('[OutboundIQ] Unexpected error in recommend(): ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Generate a UUID v4
+     * 
+     * @return string
+     */
+    private function generateUuid(): string
+    {
+        // Use random_bytes if available (PHP 7+)
+        $data = random_bytes(16);
+        
+        // Set version to 0100
+        $data[6] = chr(ord($data[6]) & 0x0f | 0x40);
+        // Set bits 6-7 to 10
+        $data[8] = chr(ord($data[8]) & 0x3f | 0x80);
+        
+        return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
+    }
 } 

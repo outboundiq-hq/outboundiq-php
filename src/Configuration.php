@@ -35,10 +35,10 @@ class Configuration
         'max_concurrent_requests'
     ];
 
-   // private const ENDPOINT = 'https://webhook.site/75c0dfc9-d25c-4ac9-9523-dcb02000cb87';
-    // private const string ENDPOINT = 'http://agent.outboundiq.test/api/metric';
-    //private const string ENDPOINT = 'https://agent.outboundiq.dev/api/metric';
-    private const string ENDPOINT = 'https://agent.staging.outboundiq.dev/api/metric';
+    // Production: 'https://agent.outboundiq.dev/api/metric'
+    // Staging: 'https://agent.staging.outboundiq.dev/api/metric'
+    // Local: 'http://agent.outboundiq.test/api/metric'
+    private const string ENDPOINT = 'http://agent.outboundiq.test/api/metric';
 
     /**
      * Current configuration options
@@ -200,13 +200,24 @@ class Configuration
     }
 
     /**
-     * Get the endpoint URL
+     * Get the endpoint URL for metrics
      *
      * @return string
      */
     public function getEndpoint(): string
     {
         return self::ENDPOINT;
+    }
+
+    /**
+     * Get the base URL for SDK API calls
+     *
+     * @return string
+     */
+    public function getBaseUrl(): string
+    {
+        // Remove /metric from the endpoint to get base URL
+        return str_replace('/metric', '', self::ENDPOINT);
     }
 
     /**
