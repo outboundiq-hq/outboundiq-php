@@ -18,6 +18,7 @@ class ApiCall implements MetricInterface
     private float $timestamp;
     private ?string $request_type = null;
     private ?array $error = null;
+    private ?array $userContext = null;
 
     public function __construct(
         string $url,
@@ -30,7 +31,8 @@ class ApiCall implements MetricInterface
         ?string $responseBody = null,
         ?string $request_type = null,
         ?string $error_message = null,
-        ?string $error_type = null
+        ?string $error_type = null,
+        ?array $userContext = null
     ) {
         $this->url = $url;
         $this->method = $method;
@@ -43,6 +45,7 @@ class ApiCall implements MetricInterface
         $this->timestamp = microtime(true);
         $this->transactionId = $this->generateTransactionId();
         $this->request_type = $request_type;
+        $this->userContext = $userContext;
         
         if ($error_message !== null || $error_type !== null) {
             $this->error = [
@@ -94,6 +97,10 @@ class ApiCall implements MetricInterface
 
         if ($this->error !== null) {
             $data['error'] = $this->error;
+        }
+        
+        if ($this->userContext !== null) {
+            $data['user_context'] = $this->userContext;
         }
 
         return $data;

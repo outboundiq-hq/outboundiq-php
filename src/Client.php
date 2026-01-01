@@ -92,6 +92,7 @@ class Client
      * @param string $request_type Request type
      * @param string|null $error_message Error message
      * @param string|null $error_type Error type
+     * @param array|null $userContext User context (user_id, user_type, context)
      * @return void
      */
     public function trackApiCall(
@@ -105,7 +106,8 @@ class Client
         ?string $responseBody = null,
         string $request_type = 'unknown',
         ?string $error_message = null,
-        ?string $error_type = null
+        ?string $error_type = null,
+        ?array $userContext = null
     ): void {
         error_log("[OutboundIQ] Attempting to track API call to: $url");
         
@@ -130,7 +132,8 @@ class Client
             responseBody: $responseBody,
             request_type: $request_type,
             error_message: $error_message,
-            error_type: $error_type
+            error_type: $error_type,
+            userContext: $userContext
         );
 
         $this->transport->addMetric($metric);
@@ -216,6 +219,7 @@ class Client
      * @param string $serviceName The service name (e.g., 'payment-processing')
      * @param array $options Optional settings:
      *                       - 'request_id': Your own trace ID for correlation (auto-generated if not provided)
+     *                       - 'user_context': User context array (user_id, user_type, context)
      * @return array|null The recommendation response from server, or null on network failure
      */
     public function recommend(string $serviceName, array $options = []): ?array
@@ -230,12 +234,19 @@ class Client
             // Generate or use provided request ID for tracing
             $requestId = $options['request_id'] ?? $this->generateUuid();
             
+            $headers = [
+                'Authorization' => 'Bearer ' . $this->config->getApiKey(),
+                'Accept' => 'application/json',
+                'X-Request-Id' => $requestId,
+            ];
+            
+            // Add user context as header if provided
+            if (!empty($options['user_context'])) {
+                $headers['X-User-Context'] = json_encode($options['user_context']);
+            }
+            
             $response = $this->httpClient->get($url, [
-                'headers' => [
-                    'Authorization' => 'Bearer ' . $this->config->getApiKey(),
-                    'Accept' => 'application/json',
-                    'X-Request-Id' => $requestId,
-                ],
+                'headers' => $headers,
                 'timeout' => $this->config->getTimeout(),
                 'http_errors' => false, // Don't throw exceptions for 4xx/5xx
             ]);
@@ -266,9 +277,11 @@ class Client
      * - Affected components
      *
      * @param string $providerSlug The provider slug (e.g., 'paystack')
+     * @param array $options Optional settings:
+     *                       - 'user_context': User context array (user_id, user_type, context)
      * @return array|null The status response from server, or null on network failure
      */
-    public function providerStatus(string $providerSlug): ?array
+    public function providerStatus(string $providerSlug, array $options = []): ?array
     {
         if (!$this->enabled) {
             return null;
@@ -277,11 +290,18 @@ class Client
         try {
             $url = $this->config->getBaseUrl() . '/v1/provider/' . urlencode($providerSlug) . '/status';
             
+            $headers = [
+                'Authorization' => 'Bearer ' . $this->config->getApiKey(),
+                'Accept' => 'application/json',
+            ];
+            
+            // Add user context as header if provided
+            if (!empty($options['user_context'])) {
+                $headers['X-User-Context'] = json_encode($options['user_context']);
+            }
+            
             $response = $this->httpClient->get($url, [
-                'headers' => [
-                    'Authorization' => 'Bearer ' . $this->config->getApiKey(),
-                    'Accept' => 'application/json',
-                ],
+                'headers' => $headers,
                 'timeout' => $this->config->getTimeout(),
                 'http_errors' => false,
             ]);
@@ -307,9 +327,11 @@ class Client
      * - Latency trend
      *
      * @param string $endpointSlug The endpoint slug (e.g., 'paystack-post-transaction-initialize')
+     * @param array $options Optional settings:
+     *                       - 'user_context': User context array (user_id, user_type, context)
      * @return array|null The status response from server, or null on network failure
      */
-    public function endpointStatus(string $endpointSlug): ?array
+    public function endpointStatus(string $endpointSlug, array $options = []): ?array
     {
         if (!$this->enabled) {
             return null;
@@ -318,11 +340,18 @@ class Client
         try {
             $url = $this->config->getBaseUrl() . '/v1/endpoint/' . urlencode($endpointSlug) . '/status';
             
+            $headers = [
+                'Authorization' => 'Bearer ' . $this->config->getApiKey(),
+                'Accept' => 'application/json',
+            ];
+            
+            // Add user context as header if provided
+            if (!empty($options['user_context'])) {
+                $headers['X-User-Context'] = json_encode($options['user_context']);
+            }
+            
             $response = $this->httpClient->get($url, [
-                'headers' => [
-                    'Authorization' => 'Bearer ' . $this->config->getApiKey(),
-                    'Accept' => 'application/json',
-                ],
+                'headers' => $headers,
                 'timeout' => $this->config->getTimeout(),
                 'http_errors' => false,
             ]);
