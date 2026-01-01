@@ -257,6 +257,88 @@ class Client
     }
 
     /**
+     * Get status and metrics for a provider
+     *
+     * Returns real-time actionable data for decision-making:
+     * - Provider status (from status page)
+     * - Aggregate metrics (success rate, latency)
+     * - Active incidents
+     * - Affected components
+     *
+     * @param string $providerSlug The provider slug (e.g., 'paystack')
+     * @return array|null The status response from server, or null on network failure
+     */
+    public function providerStatus(string $providerSlug): ?array
+    {
+        if (!$this->enabled) {
+            return null;
+        }
+
+        try {
+            $url = $this->config->getBaseUrl() . '/v1/provider/' . urlencode($providerSlug) . '/status';
+            
+            $response = $this->httpClient->get($url, [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $this->config->getApiKey(),
+                    'Accept' => 'application/json',
+                ],
+                'timeout' => $this->config->getTimeout(),
+                'http_errors' => false,
+            ]);
+
+            $body = $response->getBody()->getContents();
+            return json_decode($body, true);
+        } catch (GuzzleException $e) {
+            error_log('[OutboundIQ] Provider status request failed: ' . $e->getMessage());
+            return null;
+        } catch (Exception $e) {
+            error_log('[OutboundIQ] Unexpected error in providerStatus(): ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Get status and metrics for a specific endpoint
+     *
+     * Returns real-time actionable data for decision-making:
+     * - Endpoint-specific metrics (success rate, latency, schema stability)
+     * - Provider status (from status page)
+     * - Active incidents
+     * - Latency trend
+     *
+     * @param string $endpointSlug The endpoint slug (e.g., 'paystack-post-transaction-initialize')
+     * @return array|null The status response from server, or null on network failure
+     */
+    public function endpointStatus(string $endpointSlug): ?array
+    {
+        if (!$this->enabled) {
+            return null;
+        }
+
+        try {
+            $url = $this->config->getBaseUrl() . '/v1/endpoint/' . urlencode($endpointSlug) . '/status';
+            
+            $response = $this->httpClient->get($url, [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $this->config->getApiKey(),
+                    'Accept' => 'application/json',
+                ],
+                'timeout' => $this->config->getTimeout(),
+                'http_errors' => false,
+            ]);
+
+            $body = $response->getBody()->getContents();
+            return json_decode($body, true);
+        } catch (GuzzleException $e) {
+            error_log('[OutboundIQ] Endpoint status request failed: ' . $e->getMessage());
+            return null;
+        } catch (Exception $e) {
+            error_log('[OutboundIQ] Unexpected error in endpointStatus(): ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
      * Generate a UUID v4
      * 
      * @return string
