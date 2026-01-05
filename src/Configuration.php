@@ -20,7 +20,7 @@ class Configuration
         'flush_interval' => 60,
         'max_payload_size' => 65536,  // 64KB
         'max_concurrent_requests' => 10,
-        'transport' => 'file',
+        'transport' => 'async',
         'temp_dir' => null  // Will be set to sys_get_temp_dir() in constructor
     ];
 

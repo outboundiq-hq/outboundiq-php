@@ -14,12 +14,10 @@
     "require": {
         "php": "^8.2",
         "ext-curl": "*",
-        "ext-json": "*"
-    },
-    "require-dev": {
+        "ext-json": "*",
         "guzzlehttp/guzzle": "^7.0"
     },
-    "suggest": {
-        "guzzlehttp/guzzle": "Required for Guzzle HTTP client monitoring"
+    "require-dev": {
+        "phpunit/phpunit": "^10.0"
     }
 } 

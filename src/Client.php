@@ -6,6 +6,8 @@ use GuzzleHttp\Exception\GuzzleException;
 use OutboundIQ\Contracts\MetricInterface;
 use OutboundIQ\Models\ApiCall;
 use OutboundIQ\Transports\AsyncTransport;
+use OutboundIQ\Transports\SyncTransport;
+use OutboundIQ\Transports\QueueTransport;
 use OutboundIQ\Transports\TransportInterface;
 use OutboundIQ\Interceptors\GuzzleMiddleware;
 use OutboundIQ\Interceptors\StreamWrapper;
@@ -23,9 +25,9 @@ class Client
     private Configuration $config;
 
     /**
-     * @var AsyncTransport
+     * @var TransportInterface
      */
-    private AsyncTransport $transport;
+    private TransportInterface $transport;
 
     /**
      * @var bool
@@ -55,14 +57,28 @@ class Client
         }
 
         $this->config = new Configuration($apiKey, $options);
-        $this->transport = new AsyncTransport($this->config);
+        $this->transport = $this->createTransport();
         $this->httpClient = new GuzzleClient();
-        error_log('[OutboundIQ] Client initialized successfully');
+        error_log('[OutboundIQ] Client initialized with transport: ' . $this->config->getTransport());
         
         // Register shutdown function to automatically flush remaining metrics
         register_shutdown_function([$this->transport, 'flush']);
     }
 
+
+    /**
+     * Create the appropriate transport based on configuration.
+     *
+     * @return TransportInterface
+     */
+    private function createTransport(): TransportInterface
+    {
+        return match ($this->config->getTransport()) {
+            'sync' => new SyncTransport($this->config),
+            'queue' => new QueueTransport($this->config),
+            default => new AsyncTransport($this->config), // 'async' or any other value
+        };
+    }
 
     /**
      * Check if URL should be excluded from tracking
