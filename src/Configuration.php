@@ -17,7 +17,7 @@ class Configuration
         'timeout' => 5,
         'retry_attempts' => 3,
         'buffer_size' => 100,
-        'flush_interval' => 60,
+        'flush_interval' => 30,       // 30 seconds for near-real-time dashboards
         'max_payload_size' => 65536,  // 64KB
         'max_concurrent_requests' => 10,
         'transport' => 'async',
