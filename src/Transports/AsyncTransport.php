@@ -6,21 +6,18 @@ use OutboundIQ\Configuration;
 use OutboundIQ\Contracts\MetricInterface;
 use OutboundIQ\Models\ApiCall;
 
+/**
+ * Non-blocking transport using background curl process.
+ * Best for traditional servers (Forge, DigitalOcean, etc.)
+ */
 class AsyncTransport implements TransportInterface
 {
-    /**
-     * @var array<MetricInterface>
-     */
     private array $queue = [];
-
-    /**
-     * @var Configuration
-     */
     private Configuration $config;
 
     public function __construct(Configuration $config)
     {
-        if (!\function_exists('proc_open')) {
+        if (!function_exists('proc_open')) {
             throw new \RuntimeException('proc_open function is required but not available');
         }
         $this->config = $config;
@@ -29,19 +26,16 @@ class AsyncTransport implements TransportInterface
     public function addMetric(MetricInterface $metric): void
     {
         if (!$metric instanceof ApiCall) {
-            throw new \InvalidArgumentException('Invalid metric type. Expected ApiCall instance.');
+            throw new \InvalidArgumentException('Invalid metric type');
         }
 
-        // Validate required fields
         $data = $metric->toArray();
         if (empty($data['url']) || empty($data['method'])) {
-            error_log('OutboundIQ: Invalid metric data - missing required fields');
             return;
         }
 
         $this->queue[] = $metric;
         
-        // Check if we should flush based on buffer size or time interval
         if ($this->config->shouldFlush(count($this->queue))) {
             $this->flush();
         }
@@ -54,25 +48,15 @@ class AsyncTransport implements TransportInterface
         }
 
         try {
-            // Convert metrics to array format
-            $data = array_map(function ($metric) {
-                $array = $metric->toArray();
-                if (empty($array['url']) || empty($array['method'])) {
-                    throw new \RuntimeException('Invalid metric data: missing required fields');
-                }
-                return $array;
-            }, $this->queue);
-
+            $data = array_map(fn($metric) => $metric->toArray(), $this->queue);
             $jsonData = json_encode($data);
             
             if ($jsonData === false) {
-                throw new \RuntimeException('Failed to encode metrics data: ' . json_last_error_msg());
+                throw new \RuntimeException('Failed to encode metrics: ' . json_last_error_msg());
             }
 
-            // Base64 encode the JSON data
             $encodedData = base64_encode($jsonData);
             
-            // If data is too large, use file transport
             if (strlen($encodedData) > $this->config->getMaxPayloadSize()) {
                 $tmpfile = $this->writeToTempFile($encodedData);
                 $this->sendChunk('@' . $tmpfile);
@@ -80,10 +64,9 @@ class AsyncTransport implements TransportInterface
                 $this->sendChunk($encodedData);
             }
 
-            // Mark the flush time
             $this->config->markFlushed();
         } catch (\Throwable $e) {
-            error_log('OutboundIQ: Error sending metrics: ' . $e->getMessage());
+            error_log('OutboundIQ: ' . $e->getMessage());
         } finally {
             $this->resetQueue();
         }
@@ -94,10 +77,9 @@ class AsyncTransport implements TransportInterface
         $this->queue = [];
     }
 
-
     private function writeToTempFile(string $data): string
     {
-        $tmpfile = tempnam(sys_get_temp_dir(), 'outboundiq_');
+        $tmpfile = tempnam($this->config->getTempDir(), 'oiq_');
         file_put_contents($tmpfile, $data, LOCK_EX);
         return $tmpfile;
     }
@@ -110,12 +92,9 @@ class AsyncTransport implements TransportInterface
             $cmd = 'start /B ' . $cmd . ' > NUL';
         } else {
             $cmd = '(' . $cmd . ' > /dev/null 2>&1';
-            
-            // Delete temporary file after data transfer
-            if (substr($data, 0, 1) === '@') {
+            if (str_starts_with($data, '@')) {
                 $cmd .= '; rm ' . str_replace('@', '', $data);
             }
-            
             $cmd .= ')&';
         }
         
@@ -132,29 +111,21 @@ class AsyncTransport implements TransportInterface
         
         $cmd = 'curl -X POST --ipv4';
         
-        // Add headers
         foreach ($headers as $header) {
             $cmd .= ' -H ' . escapeshellarg($header);
         }
         
-        // Add timeout
         $cmd .= ' --max-time ' . $this->config->getTimeout();
-        
-        // Add retry attempts
         $cmd .= ' --retry ' . $this->config->getRetryAttempts();
         
-        // Add data
-        if (substr($data, 0, 1) === '@') {
-            // File-based data
+        if (str_starts_with($data, '@')) {
             $cmd .= ' --data-binary ' . escapeshellarg($data);
         } else {
-            // Direct data
             $cmd .= ' --data ' . escapeshellarg($data);
         }
         
-        // Add endpoint
         $cmd .= ' ' . escapeshellarg($this->config->getEndpoint());
         
         return $cmd;
     }
-} 
+}
