@@ -86,9 +86,20 @@ class Configuration
             $config['temp_dir'] = sys_get_temp_dir();
         }
 
-        // Validate temp directory
-        if (!is_dir($config['temp_dir']) || !is_writable($config['temp_dir'])) {
-           // throw new ConfigurationException("Temporary directory {$config['temp_dir']} is not writable");
+        // Only validate/create temp directory for async transport
+        if ($config['transport'] === 'async') {
+            $tempDir = $config['temp_dir'];
+            
+            // Try to create directory if it doesn't exist
+            if (!is_dir($tempDir)) {
+                @mkdir($tempDir, 0755, true);
+            }
+            
+            // If still not writable, fall back to system temp
+            if (!is_dir($tempDir) || !is_writable($tempDir)) {
+                $config['temp_dir'] = sys_get_temp_dir();
+                error_log("[OutboundIQ] Temp directory '$tempDir' not writable, using system temp: " . $config['temp_dir']);
+            }
         }
 
         // Initialize properties from merged config
