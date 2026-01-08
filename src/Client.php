@@ -97,6 +97,33 @@ class Client
         return $this->config;
     }
 
+    /**
+     * Ping the OutboundIQ API to verify the API key and get project info.
+     */
+    public function ping(): ?array
+    {
+        if (!$this->enabled) {
+            return null;
+        }
+
+        try {
+            $url = $this->config->getBaseUrl() . '/ping';
+            
+            $response = $this->httpClient->get($url, [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $this->config->getApiKey(),
+                    'Accept' => 'application/json',
+                ],
+                'timeout' => $this->config->getTimeout(),
+                'http_errors' => false,
+            ]);
+
+            return json_decode($response->getBody()->getContents(), true);
+        } catch (Exception $e) {
+            return null;
+        }
+    }
+
     public function track(array $data): array
     {
         if (!$this->config->isEnabled()) {
