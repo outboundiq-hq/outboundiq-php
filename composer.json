@@ -1,8 +1,28 @@
 {
     "name": "outboundiq/php",
-    "description": "API monitoring and reliability tracking for PHP applications",
+    "description": "Track and monitor outgoing API calls in PHP applications",
     "type": "library",
     "license": "MIT",
+    "keywords": [
+        "api",
+        "monitoring",
+        "tracking",
+        "http",
+        "observability",
+        "metrics"
+    ],
+    "homepage": "https://outboundiq.dev",
+    "authors": [
+        {
+            "name": "OutboundIQ",
+            "email": "hello@outboundiq.dev"
+        }
+    ],
+    "support": {
+        "email": "hello@outboundiq.dev",
+        "issues": "https://github.com/outboundiq/php/issues",
+        "source": "https://github.com/outboundiq/php"
+    },
     "autoload": {
         "psr-4": {
             "OutboundIQ\\": "src/"
@@ -19,5 +39,9 @@
     },
     "require-dev": {
         "phpunit/phpunit": "^10.0"
-    }
-} 
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "stable"
+}

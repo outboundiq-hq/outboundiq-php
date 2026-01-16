@@ -21,9 +21,7 @@ class Configuration
 
     private const array PROTECTED_PROPERTIES = ['version', 'max_payload_size', 'max_concurrent_requests'];
 
-    // Production: 'https://agent.outboundiq.dev/api/metric'
-    // Local: 'http://agent.outboundiq.test/api/metric'
-    private const string ENDPOINT = 'https://agent.staging.outboundiq.dev/api/metric';
+    private const string ENDPOINT = 'https://agent.outboundiq.dev/api/metric';
 
     private array $options;
     private ?string $apiKey;

@@ -6,10 +6,6 @@ use OutboundIQ\Configuration;
 use OutboundIQ\Contracts\MetricInterface;
 use OutboundIQ\Models\ApiCall;
 
-/**
- * Blocking transport using curl_exec.
- * Use for Laravel Vapor / AWS Lambda where proc_open doesn't work.
- */
 class SyncTransport implements TransportInterface
 {
     private array $queue = [];

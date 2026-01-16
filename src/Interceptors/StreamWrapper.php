@@ -20,7 +20,6 @@ class StreamWrapper
     {
         self::$client = $client;
         
-        // Store and unregister original wrappers
         foreach (['http', 'https'] as $protocol) {
             if (in_array($protocol, stream_get_wrappers())) {
                 self::$originalWrappers[$protocol] = true;
@@ -28,14 +27,12 @@ class StreamWrapper
             }
         }
         
-        // Register our wrapper
         stream_wrapper_register('http', self::class);
         stream_wrapper_register('https', self::class);
     }
 
     public static function unregister(): void
     {
-        // Restore original wrappers
         foreach (['http', 'https'] as $protocol) {
             if (in_array($protocol, stream_get_wrappers())) {
                 @stream_wrapper_unregister($protocol);
@@ -52,16 +49,13 @@ class StreamWrapper
         $this->url = $path;
         $this->position = 0;
 
-        // Initialize curl
         $ch = curl_init();
         
-        // Get context options
         $contextOptions = [];
         if ($this->context) {
             $contextOptions = stream_context_get_options($this->context);
         }
         
-        // Set curl options
         $curlOptions = [
             CURLOPT_URL => $path,
             CURLOPT_RETURNTRANSFER => true,
@@ -74,22 +68,18 @@ class StreamWrapper
             CURLOPT_USERAGENT => 'OutboundIQ/1.0'
         ];
 
-        // Apply context options to curl
         if (!empty($contextOptions['http'])) {
             $http = $contextOptions['http'];
             
-            // Method
             if (!empty($http['method'])) {
                 $curlOptions[CURLOPT_CUSTOMREQUEST] = $http['method'];
             }
             
-            // Headers
             if (!empty($http['header'])) {
                 $headers = is_array($http['header']) ? $http['header'] : explode("\r\n", $http['header']);
                 $curlOptions[CURLOPT_HTTPHEADER] = $headers;
             }
             
-            // Content/Body
             if (!empty($http['content'])) {
                 $curlOptions[CURLOPT_POSTFIELDS] = $http['content'];
             }
@@ -97,7 +87,6 @@ class StreamWrapper
 
         curl_setopt_array($ch, $curlOptions);
 
-        // Execute request
         $response = curl_exec($ch);
         
         if ($response === false) {
@@ -106,7 +95,6 @@ class StreamWrapper
             $statusCode = 0;
             $errorType = 'unknown_error';
 
-            // Map curl error codes to error types
             switch ($errorCode) {
                 case CURLE_OPERATION_TIMEOUTED:
                     $errorType = 'timeout';
@@ -122,7 +110,6 @@ class StreamWrapper
                     break;
             }
 
-            // Track the failed request
             self::$client->trackApiCall(
                 url: $path,
                 method: $contextOptions['http']['method'] ?? 'GET',
@@ -142,18 +129,13 @@ class StreamWrapper
             return false;
         }
 
-        // Split headers and body
         $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
         $headerStr = substr($response, 0, $headerSize);
         $this->content = substr($response, $headerSize);
         
-        // Parse headers
         $this->headers = array_filter(explode("\r\n", $headerStr));
-        
-        // Get status code for tracking
         $statusCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         
-        // Track the API call
         self::$client->trackApiCall(
             url: $path,
             method: $contextOptions['http']['method'] ?? 'GET',

@@ -6,10 +6,6 @@ use OutboundIQ\Configuration;
 use OutboundIQ\Contracts\MetricInterface;
 use OutboundIQ\Models\ApiCall;
 
-/**
- * Non-blocking transport using background curl process.
- * Best for traditional servers (Forge, DigitalOcean, etc.)
- */
 class AsyncTransport implements TransportInterface
 {
     private array $queue = [];

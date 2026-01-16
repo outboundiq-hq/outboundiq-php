@@ -97,9 +97,6 @@ class Client
         return $this->config;
     }
 
-    /**
-     * Ping the OutboundIQ API to verify the API key and get project info.
-     */
     public function ping(): ?array
     {
         if (!$this->enabled) {
@@ -155,9 +152,6 @@ class Client
         $this->config->setEnabled(false);
     }
 
-    /**
-     * Get recommendation for which provider/endpoint to use.
-     */
     public function recommend(string $serviceName, array $options = []): ?array
     {
         if (!$this->enabled) {
@@ -190,9 +184,6 @@ class Client
         }
     }
 
-    /**
-     * Get status and metrics for a provider.
-     */
     public function providerStatus(string $providerSlug, array $options = []): ?array
     {
         if (!$this->enabled) {
@@ -223,9 +214,6 @@ class Client
         }
     }
 
-    /**
-     * Get status and metrics for a specific endpoint.
-     */
     public function endpointStatus(string $endpointSlug, array $options = []): ?array
     {
         if (!$this->enabled) {

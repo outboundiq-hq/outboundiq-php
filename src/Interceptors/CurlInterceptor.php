@@ -6,29 +6,14 @@ use OutboundIQ\Client;
 
 class CurlInterceptor
 {
-    /**
-     * @var Client
-     */
     private static Client $client;
-
-    /**
-     * @var array
-     */
     private static array $handles = [];
-
     private static array $originalFunctions = [];
 
-    /**
-     * Register the interceptor
-     *
-     * @param Client $client
-     * @return void
-     */
     public static function register(Client $client): void
     {
         self::$client = $client;
         
-        // Store original functions
         self::$originalFunctions = [
             'curl_init' => function_exists('curl_init_original') ? 'curl_init_original' : 'curl_init',
             'curl_exec' => function_exists('curl_exec_original') ? 'curl_exec_original' : 'curl_exec',
@@ -38,9 +23,6 @@ class CurlInterceptor
         ];
     }
 
-    /**
-     * Proxy for curl_init
-     */
     public static function init($url = null)
     {
         $handle = call_user_func(self::$originalFunctions['curl_init'], $url);
@@ -54,9 +36,6 @@ class CurlInterceptor
         return $handle;
     }
 
-    /**
-     * Proxy for curl_exec
-     */
     public static function exec($ch)
     {
         $handle = (int)$ch;
@@ -69,7 +48,6 @@ class CurlInterceptor
             
             $curlInfo = curl_getinfo($ch);
             
-            // Determine the HTTP method
             $method = 'GET';
             if (isset($info['options'][CURLOPT_CUSTOMREQUEST])) {
                 $method = $info['options'][CURLOPT_CUSTOMREQUEST];
@@ -89,7 +67,6 @@ class CurlInterceptor
                 $errorMessage = curl_error($ch);
                 $errorCode = curl_errno($ch);
 
-                // Map curl error codes to error types
                 switch ($errorCode) {
                     case CURLE_OPERATION_TIMEOUTED:
                         $errorType = 'timeout';
@@ -131,9 +108,6 @@ class CurlInterceptor
         return call_user_func(self::$originalFunctions['curl_exec'], $ch);
     }
 
-    /**
-     * Proxy for curl_setopt
-     */
     public static function setopt($ch, $option, $value)
     {
         $handle = (int)$ch;
@@ -143,9 +117,6 @@ class CurlInterceptor
         return call_user_func(self::$originalFunctions['curl_setopt'], $ch, $option, $value);
     }
 
-    /**
-     * Proxy for curl_setopt_array
-     */
     public static function setopt_array($ch, array $options)
     {
         $handle = (int)$ch;
@@ -158,9 +129,6 @@ class CurlInterceptor
         return call_user_func(self::$originalFunctions['curl_setopt_array'], $ch, $options);
     }
 
-    /**
-     * Proxy for curl_close
-     */
     public static function close($ch)
     {
         $handle = (int)$ch;
@@ -170,9 +138,6 @@ class CurlInterceptor
         return call_user_func(self::$originalFunctions['curl_close'], $ch);
     }
 
-    /**
-     * Get the tracking instance for a handle
-     */
     public static function getTracking($ch): ?array
     {
         return self::$handles[(int)$ch] ?? null;

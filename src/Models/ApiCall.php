@@ -63,7 +63,6 @@ class ApiCall implements MetricInterface
             return bin2hex(openssl_random_pseudo_bytes(16));
         }
         
-        // Fallback to a less secure but still unique identifier
         return uniqid('', true);
     }
 

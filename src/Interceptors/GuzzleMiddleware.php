@@ -14,16 +14,12 @@ class GuzzleMiddleware
 
     public static function register(Client $client): void
     {
-        error_log('[OutboundIQ] Registering GuzzleMiddleware');
         self::$client = $client;
 
-        // Create a new handler stack with our middleware
         $stack = HandlerStack::create();
         $stack->push(self::createMiddleware(), 'outboundiq');
         
-        // Store the stack for use in new client instances
         self::$defaultStack = $stack;
-        error_log('[OutboundIQ] Handler stack created and stored');
     }
 
     /**
@@ -34,7 +30,6 @@ class GuzzleMiddleware
         if (self::$defaultStack === null) {
             throw new \RuntimeException('GuzzleMiddleware has not been registered');
         }
-        error_log('[OutboundIQ] Returning handler stack for new client');
         return self::$defaultStack;
     }
 
@@ -42,29 +37,24 @@ class GuzzleMiddleware
     {
         return function (callable $handler) {
             return function (RequestInterface $request, array $options) use ($handler) {
-                error_log('[OutboundIQ] Intercepting request to: ' . $request->getUri());
                 $startTime = microtime(true);
 
                 return $handler($request, $options)->then(
                     function (ResponseInterface $response) use ($request, $startTime) {
                         $duration = (microtime(true) - $startTime) * 1000;
-                        error_log('[OutboundIQ] Request completed in ' . $duration . 'ms');
 
-                        // Extract request body
                         $requestBody = null;
                         if ($request->getBody()->isSeekable()) {
                             $requestBody = $request->getBody()->getContents();
                             $request->getBody()->rewind();
                         }
 
-                        // Extract response body
                         $responseBody = null;
                         if ($response->getBody()->isSeekable()) {
                             $responseBody = $response->getBody()->getContents();
                             $response->getBody()->rewind();
                         }
 
-                        // Track the API call
                         self::$client->trackApiCall(
                             url: (string)$request->getUri(),
                             method: $request->getMethod(),
@@ -77,21 +67,17 @@ class GuzzleMiddleware
                             request_type: 'guzzle'
                         );
 
-                        error_log('[OutboundIQ] API call tracked successfully');
                         return $response;
                     },
                     function ($reason) use ($request, $startTime) {
                         $duration = (microtime(true) - $startTime) * 1000;
-                        error_log('[OutboundIQ] Request failed after ' . $duration . 'ms');
 
-                        // Extract request body
                         $requestBody = null;
                         if ($request->getBody()->isSeekable()) {
                             $requestBody = $request->getBody()->getContents();
                             $request->getBody()->rewind();
                         }
 
-                        // Determine error type and status code
                         $statusCode = 0;
                         $errorType = 'unknown_error';
                         $errorMessage = $reason->getMessage();
@@ -110,7 +96,6 @@ class GuzzleMiddleware
                             }
                         }
 
-                        // Track the failed API call
                         self::$client->trackApiCall(
                             url: (string)$request->getUri(),
                             method: $request->getMethod(),
@@ -125,7 +110,6 @@ class GuzzleMiddleware
                             error_type: $errorType
                         );
 
-                        error_log('[OutboundIQ] Failed API call tracked');
                         throw $reason;
                     }
                 );

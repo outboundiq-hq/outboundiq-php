@@ -6,11 +6,6 @@ use OutboundIQ\Configuration;
 use OutboundIQ\Contracts\MetricInterface;
 use OutboundIQ\Models\ApiCall;
 
-/**
- * Queue-based transport for Laravel.
- * Dispatches metrics to a background job for truly async behavior.
- * Best for Vapor/Lambda with SQS.
- */
 class QueueTransport implements TransportInterface
 {
     private array $queue = [];
@@ -56,7 +51,6 @@ class QueueTransport implements TransportInterface
             return;
         }
 
-        // Fall back to sync if no dispatcher configured
         if (!self::hasDispatcher()) {
             $this->flushSync();
             return;
