@@ -10,7 +10,7 @@ composer require outboundiq/outboundiq-php
 
 ## Quick Start
 
-1. Get your API key from [OutboundIQ Dashboard](https://dashboard.outboundiq.com)
+1. Get your API key from [OutboundIQ Dashboard](https://outboundiq.dev)
 
 2. Initialize the package:
 

@@ -1,5 +1,5 @@
 {
-    "name": "outboundiq/php",
+    "name": "outboundiq/outboundiq-php",
     "description": "Track and monitor outgoing API calls in PHP applications",
     "type": "library",
     "license": "MIT",
@@ -20,8 +20,8 @@
     ],
     "support": {
         "email": "hello@outboundiq.dev",
-        "issues": "https://github.com/outboundiq/php/issues",
-        "source": "https://github.com/outboundiq/php"
+        "issues": "https://github.com/outboundiq-hq/outboundiq-php/issues",
+        "source": "https://github.com/outboundiq-hq/outboundiq-php"
     },
     "autoload": {
         "psr-4": {
