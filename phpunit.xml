@@ -16,6 +16,6 @@
         </include>
     </coverage>
     <php>
-        <env name="OUTBOUNDIQ_API_KEY" value="test_key_12345678901234567890123456789012"/>
+        <env name="OUTBOUNDIQ_KEY" value="test_key_12345678901234567890123456789012"/>
     </php>
 </phpunit> 

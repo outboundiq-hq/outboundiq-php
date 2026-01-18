@@ -31,6 +31,6 @@ if (!function_exists('outboundiq_init')) {
 }
 
 // Auto-initialize if an API key is set in environment
-if ($apiKey = getenv('OUTBOUNDIQ_API_KEY')) {
+if ($apiKey = getenv('OUTBOUNDIQ_KEY')) {
     outboundiq_init($apiKey);
 } 

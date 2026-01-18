@@ -80,10 +80,10 @@ $status = $client->endpointStatus('stripe-charges');
 
 ## Environment Variable
 
-Set `OUTBOUNDIQ_API_KEY` in your environment and the package will auto-initialize:
+Set `OUTBOUNDIQ_KEY` in your environment and the package will auto-initialize:
 
 ```bash
-export OUTBOUNDIQ_API_KEY=your-api-key
+export OUTBOUNDIQ_KEY=your-api-key
 ```
 
 ## Requirements
