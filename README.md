@@ -31,6 +31,7 @@ $client = outboundiq_init('your-api-key', [
     'timeout' => 5,              // Request timeout in seconds
     'retry_attempts' => 3,       // Retry failed submissions
     'transport' => 'async',      // 'async', 'sync', or 'queue'
+    'url' => 'https://agent.outboundiq.dev/api/metric', // Custom endpoint (optional)
 ]);
 ```
 

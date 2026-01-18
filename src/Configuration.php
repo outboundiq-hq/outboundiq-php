@@ -21,10 +21,11 @@ class Configuration
 
     private const array PROTECTED_PROPERTIES = ['version', 'max_payload_size', 'max_concurrent_requests'];
 
-    private const string ENDPOINT = 'https://agent.outboundiq.dev/api/metric';
+    private const string DEFAULT_ENDPOINT = 'https://agent.outboundiq.dev/api/metric';
 
     private array $options;
     private ?string $apiKey;
+    private string $endpoint;
     private int $maxPayloadSize;
     private int $maxConcurrentRequests;
     private string $tempDir;
@@ -67,6 +68,7 @@ class Configuration
         $this->transport = $config['transport'];
         $this->tempDir = $config['temp_dir'];
         $this->lastFlushTime = microtime(true);
+        $this->endpoint = isset($options['url']) ? $this->validateEndpoint($options['url']) : self::DEFAULT_ENDPOINT;
         $this->options = $config;
 
         if (!empty($this->apiKey)) {
@@ -123,12 +125,18 @@ class Configuration
 
     public function getEndpoint(): string
     {
-        return self::ENDPOINT;
+        return $this->endpoint;
+    }
+
+    public function setUrl(string $url): self
+    {
+        $this->endpoint = $this->validateEndpoint($url);
+        return $this;
     }
 
     public function getBaseUrl(): string
     {
-        return str_replace('/metric', '', self::ENDPOINT);
+        return str_replace('/metric', '', $this->endpoint);
     }
 
     public function getBatchSize(): int
@@ -263,6 +271,7 @@ class Configuration
             'retry_attempts' => $this->setRetryAttempts($value),
             'enabled' => $this->setEnabled($value),
             'transport' => $this->setTransport($value),
+            'url' => $this->setUrl($value),
             default => throw new ConfigurationException("Unknown configuration key: {$key}"),
         };
 
