@@ -6,7 +6,7 @@ use OutboundIQ\Exceptions\ConfigurationException;
 
 class Configuration
 {
-    private const array DEFAULTS = [
+    private const DEFAULTS = [
         'batch_size' => 50,
         'enabled' => true,
         'timeout' => 5,
@@ -19,9 +19,9 @@ class Configuration
         'temp_dir' => null,
     ];
 
-    private const array PROTECTED_PROPERTIES = ['version', 'max_payload_size', 'max_concurrent_requests'];
+    private const PROTECTED_PROPERTIES = ['version', 'max_payload_size', 'max_concurrent_requests'];
 
-    private const string DEFAULT_ENDPOINT = 'https://agent.outboundiq.dev/api/metric';
+    private const DEFAULT_ENDPOINT = 'https://agent.outboundiq.dev/api/metric';
 
     private array $options;
     private ?string $apiKey;
